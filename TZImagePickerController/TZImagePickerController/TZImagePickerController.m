@@ -43,6 +43,8 @@
     self = [super init];
     if (self) {
         self = [self initWithMaxImagesCount:9 delegate:nil];
+        self.needShowCropBorder = YES;
+        self.okButtonFont = [UIFont systemFontOfSize:16];
     }
     return self;
 }
@@ -178,6 +180,7 @@
     TZAlbumPickerController *albumPickerVc = [[TZAlbumPickerController alloc] init];
     albumPickerVc.isFirstAppear = YES;
     albumPickerVc.columnNumber = columnNumber;
+    albumPickerVc.isUpdateBgStyle = self.isUpdateBgStyle;
     self = [super initWithRootViewController:albumPickerVc];
     if (self) {
         self.maxImagesCount = maxImagesCount > 0 ? maxImagesCount : 9; // Default is 9 / 默认最大可选9张图片
@@ -232,6 +235,7 @@
 /// This init method just for previewing photos / 用这个初始化方法以预览图片
 - (instancetype)initWithSelectedAssets:(NSMutableArray *)selectedAssets selectedPhotos:(NSMutableArray *)selectedPhotos index:(NSInteger)index{
     TZPhotoPreviewController *previewVc = [[TZPhotoPreviewController alloc] init];
+    previewVc.isUpdateBgStyle = self.isUpdateBgStyle;
     self = [super initWithRootViewController:previewVc];
     if (self) {
         self.selectedAssets = [NSMutableArray arrayWithArray:selectedAssets];
@@ -240,6 +244,7 @@
         
         previewVc.photos = [NSMutableArray arrayWithArray:selectedPhotos];
         previewVc.currentIndex = index;
+        previewVc.needShowCropBorder = self.needShowCropBorder;
         __weak typeof(self) weakSelf = self;
         [previewVc setDoneButtonClickBlockWithPreviewType:^(NSArray<UIImage *> *photos, NSArray *assets, BOOL isSelectOriginalPhoto) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -263,6 +268,7 @@
 /// This init method for crop photo / 用这个初始化方法以裁剪图片
 - (instancetype)initCropTypeWithAsset:(PHAsset *)asset photo:(UIImage *)photo completion:(void (^)(UIImage *cropImage,PHAsset *asset))completion {
     TZPhotoPreviewController *previewVc = [[TZPhotoPreviewController alloc] init];
+    previewVc.isUpdateBgStyle = self.isUpdateBgStyle;
     self = [super initWithRootViewController:previewVc];
     if (self) {
         self.maxImagesCount = 1;
@@ -274,6 +280,7 @@
         previewVc.photos = [NSMutableArray arrayWithArray:@[photo]];
         previewVc.isCropImage = YES;
         previewVc.currentIndex = 0;
+        previewVc.needShowCropBorder = self.needShowCropBorder;
         __weak typeof(self) weakSelf = self;
         [previewVc setDoneButtonClickBlockCropMode:^(UIImage *cropImage, id asset) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -430,6 +437,7 @@
     // 1.6.8 判断是否需要push到照片选择页，如果_pushPhotoPickerVc为NO,则不push
     if (!_didPushPhotoPickerVc && _pushPhotoPickerVc) {
         TZPhotoPickerController *photoPickerVc = [[TZPhotoPickerController alloc] init];
+        photoPickerVc.isUpdateBgStyle = self.isUpdateBgStyle;
         photoPickerVc.isFirstAppear = YES;
         photoPickerVc.columnNumber = self.columnNumber;
         [[TZImageManager manager] getCameraRollAlbumWithFetchAssets:NO completion:^(TZAlbumModel *model) {
@@ -912,6 +920,7 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     TZPhotoPickerController *photoPickerVc = [[TZPhotoPickerController alloc] init];
+    photoPickerVc.isUpdateBgStyle = self.isUpdateBgStyle;
     photoPickerVc.columnNumber = self.columnNumber;
     TZAlbumModel *model = _albumArr[indexPath.row];
     photoPickerVc.model = model;

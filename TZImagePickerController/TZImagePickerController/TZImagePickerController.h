@@ -188,6 +188,8 @@
 /// statusBar的样式，默认为UIStatusBarStyleLightContent
 @property (assign, nonatomic) UIStatusBarStyle statusBarStyle;
 
+@property (nonatomic, assign)BOOL isUpdateBgStyle;
+
 #pragma mark -
 /// Single selection mode, valid when maxImagesCount = 1
 /// 单选模式,maxImagesCount为1时才生效
@@ -199,6 +201,7 @@
 @property (nonatomic, assign) CGRect cropRectLandscape;  ///< 裁剪框的尺寸(横屏)
 @property (nonatomic, assign) BOOL needCircleCrop;       ///< 需要圆形裁剪框
 @property (nonatomic, assign) NSInteger circleCropRadius;  ///< 圆形裁剪框半径大小
+@property (assign, nonatomic) BOOL needShowCropBorder;   ///< 是否显示裁剪范围Border
 @property (nonatomic, copy) void (^cropViewSettingBlock)(UIView *cropView);     ///< 自定义裁剪框的其他属性
 @property (nonatomic, copy) void (^navLeftBarButtonSettingBlock)(UIButton *leftButton);     ///< 自定义返回按钮样式及其属性
 
@@ -256,6 +259,7 @@
 @property (nonatomic, strong) UIColor *naviBgColor;
 @property (nonatomic, strong) UIColor *naviTitleColor;
 @property (nonatomic, strong) UIFont *naviTitleFont;
+@property (nonatomic, strong) UIFont *okButtonFont;
 @property (nonatomic, strong) UIColor *barItemTextColor;
 @property (nonatomic, strong) UIFont *barItemTextFont;
 
@@ -354,6 +358,7 @@
 @interface TZAlbumPickerController : UIViewController
 @property (nonatomic, assign) NSInteger columnNumber;
 @property (assign, nonatomic) BOOL isFirstAppear;
+@property (nonatomic, assign)BOOL isUpdateBgStyle;
 - (void)configTableView;
 @end
 

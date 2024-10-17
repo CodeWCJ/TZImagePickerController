@@ -27,6 +27,8 @@
     
     UIView *_toolBar;
     UIButton *_doneButton;
+    UIButton *_cancelButton;
+    UIButton *_resetButton;
     UIImageView *_numberImageView;
     UILabel *_numberLabel;
     UIButton *_originalPhotoButton;
@@ -102,7 +104,9 @@
     
     _naviBar = [[UIView alloc] initWithFrame:CGRectZero];
     _naviBar.backgroundColor = [UIColor colorWithRed:(34/255.0) green:(34/255.0)  blue:(34/255.0) alpha:0.7];
-    
+    if (self.isUpdateBgStyle) {
+        _naviBar.hidden = YES;
+    }
     _backButton = [[UIButton alloc] initWithFrame:CGRectZero];
     [_backButton setImage:[UIImage tz_imageNamedFromMyBundle:@"navi_back"] forState:UIControlStateNormal];
     [_backButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
@@ -131,8 +135,12 @@
 
 - (void)configBottomToolBar {
     _toolBar = [[UIView alloc] initWithFrame:CGRectZero];
-    static CGFloat rgb = 34 / 255.0;
-    _toolBar.backgroundColor = [UIColor colorWithRed:rgb green:rgb blue:rgb alpha:0.7];
+    if (self.isUpdateBgStyle) {
+        _toolBar.backgroundColor = [UIColor clearColor];
+    } else {
+        static CGFloat rgb = 34 / 255.0;
+        _toolBar.backgroundColor = [UIColor colorWithRed:rgb green:rgb blue:rgb alpha:0.7];
+    }
     
     TZImagePickerController *_tzImagePickerVc = (TZImagePickerController *)self.navigationController;
     if (_tzImagePickerVc.allowPickingOriginalPhoto) {
@@ -157,10 +165,20 @@
     }
     
     _doneButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    _doneButton.titleLabel.font = [UIFont systemFontOfSize:16];
+    _doneButton.titleLabel.font = _tzImagePickerVc.okButtonFont;
     [_doneButton addTarget:self action:@selector(doneButtonClick) forControlEvents:UIControlEventTouchUpInside];
     [_doneButton setTitle:_tzImagePickerVc.doneBtnTitleStr forState:UIControlStateNormal];
     [_doneButton setTitleColor:_tzImagePickerVc.oKButtonTitleColorNormal forState:UIControlStateNormal];
+    
+    _cancelButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    _cancelButton.titleLabel.font = _tzImagePickerVc.okButtonFont;
+    [_cancelButton addTarget:self action:@selector(cancelButtonClick) forControlEvents:UIControlEventTouchUpInside];
+    [_cancelButton setTitle:[NSBundle tz_localizedStringForKey:@"Cancel"] forState:0];
+    [_cancelButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+   
+    _resetButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [_resetButton setImage:[UIImage tz_imageNamedFromMyBundle:@"preview_reset"] forState:UIControlStateNormal];
+    [_resetButton addTarget:self action:@selector(resetButtonClick) forControlEvents:UIControlEventTouchUpInside];
     
     _numberImageView = [[UIImageView alloc] initWithImage:_tzImagePickerVc.photoNumberIconImage];
     _numberImageView.backgroundColor = [UIColor clearColor];
@@ -183,6 +201,8 @@
     
     [_originalPhotoButton addSubview:_originalPhotoLabel];
     [_toolBar addSubview:_doneButton];
+    [_toolBar addSubview:_cancelButton];
+    [_toolBar addSubview:_resetButton];
     [_toolBar addSubview:_originalPhotoButton];
     [_toolBar addSubview:_numberImageView];
     [_toolBar addSubview:_numberLabel];
@@ -237,8 +257,10 @@
         _cropView.userInteractionEnabled = NO;
         _cropView.frame = _tzImagePickerVc.cropRect;
         _cropView.backgroundColor = [UIColor clearColor];
-        _cropView.layer.borderColor = [UIColor whiteColor].CGColor;
-        _cropView.layer.borderWidth = 1.0;
+        if (_needShowCropBorder) {
+            _cropView.layer.borderColor = [UIColor whiteColor].CGColor;
+            _cropView.layer.borderWidth = 1.0;
+        }
         if (_tzImagePickerVc.needCircleCrop) {
             _cropView.layer.cornerRadius = _tzImagePickerVc.cropRect.size.width / 2;
             _cropView.clipsToBounds = YES;
@@ -281,7 +303,7 @@
         [_collectionView reloadData];
     }
     
-    CGFloat toolBarHeight = 44 + [TZCommonTools tz_safeAreaInsets].bottom;
+    CGFloat toolBarHeight = 48 + [TZCommonTools tz_safeAreaInsets].bottom;
     CGFloat toolBarTop = self.view.tz_height - toolBarHeight;
     _toolBar.frame = CGRectMake(0, toolBarTop, self.view.tz_width, toolBarHeight);
     if (_tzImagePickerVc.allowPickingOriginalPhoto) {
@@ -290,7 +312,15 @@
         _originalPhotoLabel.frame = CGRectMake(fullImageWidth + 42, 0, 80, 44);
     }
     [_doneButton sizeToFit];
-    _doneButton.frame = CGRectMake(self.view.tz_width - _doneButton.tz_width - 12, 0, MAX(44, _doneButton.tz_width), 44);
+    _doneButton.frame = CGRectMake(self.view.tz_width - _doneButton.tz_width - 16, 2, MAX(44, _doneButton.tz_width), 44);
+       
+    if (self.isUpdateBgStyle) {
+        [_cancelButton sizeToFit];
+        _cancelButton.frame = CGRectMake(16, 2, MAX(44, _cancelButton.tz_width), 44);
+
+        _resetButton.frame = CGRectMake((self.view.tz_width - 44) / 2, 2, 44, 44);
+    }
+    
     _numberImageView.frame = CGRectMake(_doneButton.tz_left - 24 - 5, 10, 24, 24);
     _numberLabel.frame = _numberImageView.frame;
     
@@ -435,6 +465,20 @@
     }
 }
 
+- (void)cancelButtonClick {
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+- (void)resetButtonClick {
+    NSArray *cells = _collectionView.visibleCells;
+    for (TZPhotoPreviewCell *cell in cells) {
+        if ([cell isKindOfClass:[TZPhotoPreviewCell class]]) {
+            [cell recoverSubviews];
+        }
+    }
+    
+}
+
 - (void)originalPhotoButtonClick {
     TZAssetModel *model = _models[self.currentIndex];
     if ([[TZImageManager manager] isAssetCannotBeSelected:model.asset]) {
@@ -456,6 +500,7 @@
 }
 
 - (void)didTapPreviewCell {
+    if (self.isUpdateBgStyle) { return; }
     self.isHideNaviBar = !self.isHideNaviBar;
     _naviBar.hidden = self.isHideNaviBar;
     _toolBar.hidden = self.isHideNaviBar;

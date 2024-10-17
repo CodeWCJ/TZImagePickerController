@@ -301,7 +301,7 @@ static CGFloat itemMargin = 5;
     }
     
     _doneButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    _doneButton.titleLabel.font = [UIFont systemFontOfSize:16];
+    _doneButton.titleLabel.font = tzImagePickerVc.okButtonFont;
     [_doneButton addTarget:self action:@selector(doneButtonClick) forControlEvents:UIControlEventTouchUpInside];
     [_doneButton setTitle:tzImagePickerVc.doneBtnTitleStr forState:UIControlStateNormal];
     [_doneButton setTitle:tzImagePickerVc.doneBtnTitleStr forState:UIControlStateDisabled];
@@ -443,6 +443,7 @@ static CGFloat itemMargin = 5;
 }
 - (void)previewButtonClick {
     TZPhotoPreviewController *photoPreviewVc = [[TZPhotoPreviewController alloc] init];
+    photoPreviewVc.isUpdateBgStyle = self.isUpdateBgStyle;
     [self pushPhotoPrevireViewController:photoPreviewVc needCheckSelectedModels:YES];
 }
 
@@ -731,6 +732,7 @@ static CGFloat itemMargin = 5;
         }
     } else {
         TZPhotoPreviewController *photoPreviewVc = [[TZPhotoPreviewController alloc] init];
+        photoPreviewVc.isUpdateBgStyle = self.isUpdateBgStyle;
         photoPreviewVc.currentIndex = index;
         photoPreviewVc.models = _models;
         [self pushPhotoPrevireViewController:photoPreviewVc];
@@ -1057,6 +1059,7 @@ static CGFloat itemMargin = 5;
     if (tzImagePickerVc.maxImagesCount <= 1) {
         if (tzImagePickerVc.allowCrop && asset.mediaType == PHAssetMediaTypeImage) {
             TZPhotoPreviewController *photoPreviewVc = [[TZPhotoPreviewController alloc] init];
+            photoPreviewVc.isUpdateBgStyle = self.isUpdateBgStyle;
             if (tzImagePickerVc.sortAscendingByModificationDate) {
                 photoPreviewVc.currentIndex = _models.count - 1;
             } else {
